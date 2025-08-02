@@ -1,32 +1,17 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const admin = require('./firebase');
+import express from 'express';
+import dotenv from 'dotenv'; 
+import mongoose from 'mongoose';
+import cors from 'cors';
+import userRoutes from './routes/user.routes.js'
 
+dotenv.config();
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-//firebase middleware
-const verifyFirebaseToken = async (req, res, next) => {
-    const token = req.headers.authorization?.split(" ")[1];
+app.use('/api/users', userRoutes);
 
-    try{
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        req.user = decodedToken;
-        next();
-    } catch (err){
-        console.error(err);
-        res.status(401).json({message: "invalid token"});
-    }
-};
-
-//example protected route
-app.get('/protected', verifyFirebaseToken, (req, res) => {
-    res.json({ message: `Hello ${req.user.email}!` });
-});
 
 //DB connection
 mongoose.connect(process.env.MONGO_URI)
